@@ -154,15 +154,15 @@ from werkzeug.utils import secure_filename
 
 # 确保这些配置正确
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/video')
-ALLOWED_EXTENSIONS = {'mp4', 'webm', 'ogg', 'mov'}
+ALLOWED_EXTENSIONS1 = {'mp4', 'webm', 'ogg', 'mov'}
 
 # 创建上传目录（如果不存在）
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-def allowed_file(filename):
+def allowed_file1(filename):
     return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS1
 
 
 @app.route('/api/upload-video', methods=['POST'])
@@ -174,7 +174,7 @@ def upload_video():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    if file and allowed_file(file.filename):
+    if file and allowed_file1(file.filename):
         filename = secure_filename(file.filename)
         save_path = os.path.join(UPLOAD_FOLDER, filename)
 
