@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我们的相册</title>
+    <link rel="stylesheet" href="/static/css/photos.css">
+    <link rel="icon" type="image/ico" href="/static/img/icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/static/img/photo-bg.jpg') no-repeat center center;
+            background-size: cover;
+            opacity: 0.8;
+            z-index: -2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>我们的回忆相册</h1>
+        <div class="upload-area">
+            <form id="uploadForm">
+                <input type="file" id="fileInput" name="file" accept="image/*" style="display:none;">
+                <button type="button" id="uploadBtn" class="upload-btn">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <!-- 小图网格 -->
+    <div class="photo-wall">
+        {% for photo in photos %}
+        <div class="photo-item" data-index="{{ loop.index0 }}">
+            <img src="{{ photo.url }}" loading="lazy" decoding="async">
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 大图查看区 -->
+    <div class="preview-container">
+        <div class="preview-content">
+            <img id="previewImage" src="">
+            <button class="close-preview"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // 修复上传功能
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const formData = new FormData();
+                formData.append('file', this.files[0]);
+
+                fetch('/photos', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // 上传成功后刷新页面
+                    } else {
+                        alert('上传失败，请重试');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('上传出错: ' + error.message);
+                });
+            }
+        });
+
+        // 保持原有的预览功能不变
+        const previewContainer = document.querySelector('.preview-container');
+        const previewImage = document.getElementById('previewImage');
+        const photoItems = document.querySelectorAll('.photo-item');
+
+        photoItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const imgSrc = this.querySelector('img').src;
+                previewImage.src = imgSrc;
+                previewContainer.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        document.querySelector('.close-preview').addEventListener('click', () => {
+            previewContainer.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    </script>
+</body>
+</html>

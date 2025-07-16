@@ -1,0 +1,127 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+
+    /* 新增背景样式 */
+    background: url('/static/img/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+}
+
+/* 添加半透明遮罩让文字更清晰 */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: -1;
+}
+
+#main-box {
+    background-color: rgba(255, 255, 255, 0.85);  /* 改为半透明 */
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    backdrop-filter: blur(5px);  /* 毛玻璃效果 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 手机端适配 */
+@media (max-width: 768px) {
+    body {
+        background: url('/static/img/bg-mobile.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    #main-box {
+        width: 90%;
+        padding: 20px;
+    }
+}
+
+#headimg {
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+#main-box {
+    background-color: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#touxiang {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#touxiang img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 10px;
+    transition: all 0.3s ease;
+}
+
+#love {
+    width: 40px !important;
+    height: 40px !important;
+}
+
+.name-style {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 15px;
+}
+
+#time {
+    margin: 20px 0;
+    font-size: 18px;
+}
+
+#box {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.smallbox {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #f0f8ff;
+    transition: all 0.3s ease;
+}
+
+.smallbox:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.smallbox a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.icon {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 5px;
+}

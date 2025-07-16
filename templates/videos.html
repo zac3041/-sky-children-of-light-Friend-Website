@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>视频 / 扎克 & 雾念</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="icon" type="image/ico" href="/static/img/icon.png">
+    <style>
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-item {
+            width: 300px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .video-item:hover {
+            transform: scale(1.05);
+        }
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-play-icon {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-play-icon::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 20px solid white;
+            margin-left: 5px;
+        }
+        .video-title {
+            margin-top: 8px;
+            text-align: center;
+            color: #333;
+        }
+        .upload-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        .upload-btn:hover {
+            background-color: #E64A19;
+        }
+        #uploadModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+        }
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        #videoPlayerModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+        #videoPlayer {
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+        }
+        .close-player {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false">
+    <img id="headimg" src="/static/img/text.png" alt="">
+    <div id="main-box">
+        <button class="upload-btn" id="uploadBtn">上传视频</button>
+
+        <div class="video-container" id="videoContainer">
+            <!-- 视频列表将通过JavaScript动态加载 -->
+        </div>
+    </div>
+
+    <!-- 上传模态框 -->
+    <div id="uploadModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeUploadModal">&times;</span>
+            <h2>上传视频</h2>
+            <form id="uploadForm">
+                <input type="file" id="videoFile" accept="video/*" required>
+                <button type="submit" style="margin-top: 15px; padding: 8px 15px; background-color: #FF5722; color: white; border: none; border-radius: 5px; cursor: pointer;">上传</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 视频播放器模态框 -->
+    <div id="videoPlayerModal">
+        <span class="close-player" id="closePlayer">&times;</span>
+        <video controls id="videoPlayer">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+
+    <script>
+        // 获取视频列表
+        async function fetchVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                const videos = await response.json();
+                displayVideos(videos);
+            } catch (error) {
+                console.error('获取视频列表失败:', error);
+            }
+        }
+        function displayVideos(videos) {
+    const container = document.getElementById('videoContainer');
+    container.innerHTML = '';
+
+    videos.forEach(video => {
+        const videoItem = document.createElement('div');
+        videoItem.className = 'video-item';
+
+        videoItem.innerHTML = `
+            <div class="video-thumbnail" onclick="playVideo('${video}')">
+                <video muted width="100%" height="100%" style="display: none;" id="video-${video}">
+                    <source src="/static/video/${video}" type="video/mp4">
+                </video>
+                <div class="video-play-icon"></div>
+                <canvas id="canvas-${video}" style="display:none;"></canvas>
+            </div>
+            <div class="video-title">${video}</div>
+        `;
+
+        container.appendChild(videoItem);
+
+        // 生成缩略图
+        generateThumbnail(video);
+    });
+}
+
+function generateThumbnail(videoName) {
+    const video = document.getElementById(`video-${videoName}`);
+    const canvas = document.getElementById(`canvas-${videoName}`);
+    const thumbnailContainer = video.parentElement;
+
+    video.addEventListener('loadedmetadata', function() {
+        // 设置canvas尺寸
+        canvas.width = 300;
+        canvas.height = 180;
+
+        // 尝试在视频不同时间点获取帧
+        let attempts = 0;
+        const maxAttempts = 3;
+        const tryCapture = () => {
+            attempts++;
+            video.currentTime = attempts * (video.duration / (maxAttempts + 1));
+        };
+
+        video.addEventListener('seeked', function() {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // 创建缩略图
+            const thumbnail = new Image();
+            thumbnail.src = canvas.toDataURL();
+            thumbnail.style.width = '100%';
+            thumbnail.style.height = '100%';
+            thumbnail.style.objectFit = 'cover';
+
+            // 移除旧的缩略图（如果有）
+            const oldThumbnail = thumbnailContainer.querySelector('img');
+            if (oldThumbnail) {
+                thumbnailContainer.removeChild(oldThumbnail);
+            }
+
+            // 插入新缩略图
+            thumbnailContainer.insertBefore(thumbnail, thumbnailContainer.querySelector('.video-play-icon'));
+        });
+
+        tryCapture();
+    });
+
+    video.load();
+}
+
+        // 显示视频列表
+        // function displayVideos(videos) {
+        //     const container = document.getElementById('videoContainer');
+        //     container.innerHTML = '';
+        //
+        //     videos.forEach(video => {
+        //         const videoItem = document.createElement('div');
+        //         videoItem.className = 'video-item';
+        //
+        //         videoItem.innerHTML = `
+        //             <div class="video-thumbnail" onclick="playVideo('${video}')">
+        //                 <video muted width="100%" height="100%" style="display: none;">
+        //                     <source src="/static/video/${video}" type="video/mp4">
+        //                 </video>
+        //                 <div class="video-play-icon"></div>
+        //             </div>
+        //             <div class="video-title">${video}</div>
+        //         `;
+        //
+        //         container.appendChild(videoItem);
+        //
+        //         // 设置视频缩略图
+        //         const videoElement = videoItem.querySelector('video');
+        //         videoElement.addEventListener('loadeddata', function() {
+        //             // 创建缩略图
+        //             const canvas = document.createElement('canvas');
+        //             canvas.width = 300;
+        //             canvas.height = 180;
+        //             const ctx = canvas.getContext('2d');
+        //             ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        //
+        //             const thumbnail = new Image();
+        //             thumbnail.src = canvas.toDataURL();
+        //             videoItem.querySelector('.video-thumbnail').insertBefore(thumbnail, videoItem.querySelector('.video-play-icon'));
+        //         });
+        //
+        //         videoElement.load();
+        //     });
+        // }
+
+        // 播放视频
+        function playVideo(videoName) {
+            const modal = document.getElementById('videoPlayerModal');
+            const player = document.getElementById('videoPlayer');
+
+            player.src = `/static/video/${videoName}`;
+            modal.style.display = 'flex';
+            player.play();
+        }
+
+        // 上传视频
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('videoFile');
+            if (!fileInput.files.length) return;
+
+            const formData = new FormData();
+            formData.append('video', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/upload-video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('上传成功！');
+                    document.getElementById('uploadModal').style.display = 'none';
+                    fetchVideos(); // 刷新视频列表
+                } else {
+                    throw new Error('上传失败');
+                }
+            } catch (error) {
+                console.error('上传出错:', error);
+                alert('上传失败，请重试');
+            }
+        });
+
+        // 模态框控制
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'flex';
+        });
+
+        document.getElementById('closeUploadModal').addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'none';
+        });
+
+        document.getElementById('closePlayer').addEventListener('click', function() {
+            const player = document.getElementById('videoPlayer');
+            player.pause();
+            player.currentTime = 0;
+            document.getElementById('videoPlayerModal').style.display = 'none';
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(event) {
+            if (event.target === document.getElementById('uploadModal')) {
+                document.getElementById('uploadModal').style.display = 'none';
+            }
+            if (event.target === document.getElementById('videoPlayerModal')) {
+                const player = document.getElementById('videoPlayer');
+                player.pause();
+                player.currentTime = 0;
+                document.getElementById('videoPlayerModal').style.display = 'none';
+            }
+        });
+
+        // 页面加载时获取视频列表
+        document.addEventListener('DOMContentLoaded', fetchVideos);
+    </script>
+</body>
+</html>

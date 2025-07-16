@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小本本</title>
+    <link rel="stylesheet" href="/static/css/notebook.css">
+    <link rel="icon" type="image/ico" href="/static/img/icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>小本本</h1>
+        <button id="uploadBtn" class="upload-btn">
+            <i class="fas fa-cloud-upload-alt"></i>
+        </button>
+    </header>
+    <div class="notebook-container">
+        <!-- 左侧文件列表 -->
+        <div class="file-list">
+            <div class="list-header">
+                <h3>文本文件</h3>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="搜索文件...">
+                </div>
+            </div>
+            <div class="files-container">
+                {% for file in files %}
+                <div class="file-item" data-filename="{{ file.path | replace('/static/text/', '') }}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>{{ file.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 右侧内容区域 -->
+        <div class="content-viewer">
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <p>请从左侧选择文件查看内容</p>
+            </div>
+            <div class="content-display" style="display:none;">
+                <div class="text-container">  <!-- 新增的包裹容器 -->
+                    <pre></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增上传模态框 -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>创建新故事</h3>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <input type="text" id="noteTitle" placeholder="笔记标题" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="noteContent" placeholder="输入笔记内容..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-save"></i> 保存笔记
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 文件点击事件处理
+        document.querySelectorAll('.file-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 更新选中状态
+                document.querySelectorAll('.file-item').forEach(i => {
+                    i.classList.remove('selected');
+                });
+                this.classList.add('selected');
+
+                // 获取并显示内容
+                const filename = this.getAttribute('data-filename');
+                fetch(`/get_note_content?file=${encodeURIComponent(filename)}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('网络响应不正常');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.content) {
+                            document.querySelector('.empty-state').style.display = 'none';
+                            const contentDisplay = document.querySelector('.content-display');
+                            contentDisplay.style.display = 'block';
+                            contentDisplay.querySelector('pre').textContent = data.content;
+                        } else {
+                            throw new Error('内容为空');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取内容失败:', error);
+                        alert('操作失败: ' + error.message);
+                    });
+            });
+        });
+
+        // 模态框控制
+        const modal = document.getElementById('uploadModal');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const closeBtn = document.querySelector('.close-modal');
+
+        uploadBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+            document.getElementById('noteTitle').focus();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // 表单提交处理
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+
+            if (!title) {
+                alert('请输入笔记标题');
+                return;
+            }
+
+            fetch('/save_note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    content: content
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('保存失败');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    this.reset();
+                    modal.style.display = 'none';
+                    location.reload();
+                } else {
+                    throw new Error(data.error || '未知错误');
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败: ' + error.message);
+            });
+        });
+
+        // 控制台调试信息
+        console.log('笔记列表加载完成，共 {{ files|length }} 个文件');
+    </script>
+</body>
+</html>

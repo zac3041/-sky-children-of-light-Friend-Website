@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>扎克 / 雾念</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="icon" type="image/ico" href="/static/img/icon.png">
+</head>
+
+<body oncontextmenu="return false">
+    <img id="headimg" src="/static/img/text.png" alt="">
+    <div id="main-box">
+        <!-- 双人头像 -->
+        <div id="touxiang">
+            <img src="/static/img/t1.jpg" onmouseover="this.src='/static/img/t3.jpg'"
+                 onmouseout="this.src='/static/img/t1.jpg'" alt="扎克" id="img1" draggable="false">
+            <img id="love" src="/static/img/love.svg" draggable="false">
+            <img src="/static/img/t2.jpg" onmouseover="this.src='/static/img/t3.jpg'"
+                 onmouseout="this.src='/static/img/t2.jpg'" alt="雾念" id="img2" draggable="false">
+        </div>
+        <div id="name">
+            <span class="name-style" id="name1">扎克</span>
+            <span class="name-style" id="name2">雾念</span>
+        </div>
+        <!-- 计时器 -->
+        <div id="time">
+            <span id="timejishiqi"></span>
+        </div>
+        <!-- 小板块 -->
+        <div id="box">
+            <div class="smallbox" id="sb1">
+                <a href="/photos">
+                    <img src="/static/img/photos.svg" class="icon" draggable="false">
+                    相册
+                </a>
+            </div>
+            <div class="smallbox" id="sb2">
+                <a href="/notebook">
+                    <img src="/static/img/book.svg" class="icon" draggable="false">
+                    小本本
+                </a>
+            </div>
+            <div class="smallbox" id="sb3">
+                <a href="/videos">
+                    <img src="/static/img/camera.svg" class="icon" draggable="false">
+                    视频
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 计时器功能
+        function timingTime() {
+            let start = '{{ start_date }}';
+            let startTime = new Date(start.replace(/-/g, '/')).getTime();
+            let currentTime = new Date().getTime();
+            let difference = currentTime - startTime;
+
+            let seconds = Math.floor(difference / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+
+            return "已经一起度过<br>" +
+                " <font color=#FF5722>" + days + "</font> 天" +
+                " <font color=#FFA000>" + (hours % 24) + "</font> 小时" +
+                " <font color=#03A9F4>" + (minutes % 60) + "</font> 分钟" +
+                " <font color=#448AFF>" + (seconds % 60) + "</font> 秒";
+        }
+
+        setInterval(() => {
+            document.getElementById('timejishiqi').innerHTML = timingTime();
+        }, 1000);
+
+        // 控制台彩蛋
+        console.log(
+            "%c光遇纪念站 By：小言u\n\nhttps://github.com/xiaoyanu/",
+            "color:#fff;background:linear-gradient(90deg,#448aff,#44e9ff);padding:5px 10px 5px 0;"
+        );
+    </script>
+</body>
+</html>
