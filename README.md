@@ -1,5 +1,5 @@
-# -sky-children-of-light-Friend-Website
-# 好友纪念网站 - 扎克 & 雾念
+# sky-children-of-light-Friend-Website
+# 光遇好友纪念网站
 
 ## 🎯 项目简介
 基于Python Flask开发的好友纪念网站
